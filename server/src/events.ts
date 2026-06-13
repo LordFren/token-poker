@@ -1,4 +1,3 @@
-import { timingSafeEqual } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type {
   Ack,
@@ -8,6 +7,7 @@ import type {
   SpValue,
 } from "@token-poker/shared";
 import { buildSnapshot } from "./snapshot.js";
+import { tokenEquals } from "./ids.js";
 import { schemas, parse } from "./validation.js";
 import { TokenBucket } from "./ratelimit.js";
 import { clientIp as resolveIp } from "./net.js";
@@ -31,12 +31,6 @@ interface SocketData {
   ip?: string;
   code?: string;
   playerId?: string;
-}
-
-/** Constant-time secret comparison (both are fixed-length hex tokens). */
-function tokenEquals(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
 export type IO = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;

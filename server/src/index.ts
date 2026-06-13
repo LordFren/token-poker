@@ -34,7 +34,10 @@ function main(): void {
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
           fontSrc: ["'self'", "https://fonts.gstatic.com"],
           imgSrc: ["'self'", "data:"],
-          connectSrc: ["'self'", "ws:", "wss:"],
+          // Same-origin only — covers the Socket.IO ws/wss handshake (the app
+          // never connects cross-origin). 'self' includes same-origin ws/wss
+          // in CSP3 browsers, so no ws:/wss: wildcard is needed.
+          connectSrc: ["'self'"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           frameAncestors: ["'none'"],

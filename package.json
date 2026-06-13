@@ -16,7 +16,9 @@
     "start:local": "npm run build && cross-env SERVE_STATIC=1 PORT=3000 node server/dist/index.js",
     "start": "cross-env SERVE_STATIC=1 node server/dist/index.js",
     "typecheck": "tsc -b shared server && npm run typecheck -w web",
-    "test:security": "node scripts/security-check.mjs"
+    "test:security": "node scripts/security-check.mjs",
+    "scan:secrets": "node scripts/secret-scan.mjs --all",
+    "prepare": "git config core.hooksPath .githooks || exit 0"
   },
   "devDependencies": {
     "concurrently": "^10.0.3",

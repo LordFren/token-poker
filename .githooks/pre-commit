@@ -1,0 +1,11 @@
+#!/bin/sh
+# Block commits that introduce obvious secrets. Enabled via core.hooksPath
+# (set by the package.json "prepare" script on npm install).
+#
+# The scanner is a safety net, not a hard requirement for committing: if Node
+# isn't on PATH (e.g. a docs-only contributor), skip rather than block.
+if ! command -v node >/dev/null 2>&1; then
+  echo "secret-scan: node not found on PATH — skipping pre-commit secret scan." >&2
+  exit 0
+fi
+exec node scripts/secret-scan.mjs --staged
