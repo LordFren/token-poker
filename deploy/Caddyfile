@@ -1,0 +1,27 @@
+# token-poker — Caddy reverse proxy + automatic HTTPS.
+#
+# The site address is read from the $DOMAIN environment variable so this file
+# is safe to commit (no real hostname baked in). Caddy fetches & renews a real
+# Let's Encrypt certificate automatically once $DOMAIN's DNS points at this box.
+#
+# For a quick start with no domain, set DOMAIN to "<your-ip>.sslip.io".
+# Reload after changes:  sudo systemctl reload caddy
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Socket.IO (WebSocket upgrade is handled transparently) + health check
+	# are served by the Node app on localhost. Everything else is the static SPA.
+	@backend path /socket.io/* /healthz
+	handle @backend {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	# Static built web app. try_files makes client-side routing (/r/<slug>) work
+	# by falling back to index.html for unknown paths.
+	handle {
+		root * /var/www/token-poker
+		try_files {path} /index.html
+		file_server
+	}
+}

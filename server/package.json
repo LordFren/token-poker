@@ -1,0 +1,29 @@
+{
+  "name": "@token-poker/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/index.js --external:better-sqlite3 --external:express --external:socket.io",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@token-poker/shared": "*",
+    "better-sqlite3": "^12.10.0",
+    "express": "^5.2.1",
+    "helmet": "^8.2.0",
+    "socket.io": "^4.8.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.0.0",
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.28.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

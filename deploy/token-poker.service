@@ -1,0 +1,36 @@
+# systemd unit for the token-poker Node server.
+# Install:  sudo cp deploy/token-poker.service /etc/systemd/system/
+#           sudo systemctl daemon-reload && sudo systemctl enable --now token-poker
+#
+# Secrets/config live in /etc/token-poker.env (NOT in this repo). See
+# deploy/token-poker.env.example for the template.
+
+[Unit]
+Description=token-poker realtime server
+After=network.target
+
+[Service]
+Type=simple
+# Dedicated non-root service account (created during setup).
+User=poker
+Group=poker
+WorkingDirectory=/opt/token-poker
+EnvironmentFile=/etc/token-poker.env
+ExecStart=/usr/bin/node server/dist/index.js
+Restart=always
+RestartSec=2
+
+# --- Hardening (defense in depth; Node only needs to read the app + write the DB) ---
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# Allow writes only to the SQLite data directory.
+ReadWritePaths=/opt/token-poker/server/data
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+{
+  "name": "token-poker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Planning poker, but you estimate LLM tokens (and rough cost) instead of story points.",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c magenta,cyan \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w web && npm run build -w server",
+    "start:local": "npm run build && cross-env SERVE_STATIC=1 PORT=3000 node server/dist/index.js",
+    "start": "cross-env SERVE_STATIC=1 node server/dist/index.js",
+    "typecheck": "tsc -b shared server && npm run typecheck -w web",
+    "test:security": "node scripts/security-check.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "cross-env": "^10.1.0",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "shell-quote": "^1.8.4",
+    "esbuild": "^0.28.0"
+  }
+}
