@@ -10,7 +10,7 @@ import {
 } from "@token-poker/shared";
 import { config } from "./config.js";
 import { loadRooms, purgeExpired, saveRoom } from "./db.js";
-import { newId, newSlug, newToken } from "./ids.js";
+import { newId, newSlug, newToken, tokenEquals } from "./ids.js";
 
 // ---------------------------------------------------------------------------
 // In-memory model (authoritative). SQLite mirrors it for restart durability.
@@ -114,6 +114,9 @@ export function createRoom(opts: {
   spectator?: boolean;
   ip?: string;
 }): CreateResult {
+  // Global backstop: per-IP caps don't bound a distributed flood across many IPs.
+  if (rooms.size >= config.maxRooms) return { ok: false, error: "The server is at capacity. Try again shortly." };
+
   if (opts.ip) {
     const count = roomsByIp.get(opts.ip)?.size ?? 0;
     if (count >= config.maxRoomsPerIp) return { ok: false, error: "Too many rooms from this connection. Try again later." };
@@ -166,9 +169,10 @@ export function joinRoom(opts: {
   const room = rooms.get(opts.code);
   if (!room) return { ok: false, error: "Room not found or expired." };
 
-  // Rejoin by token (refresh / reconnect)
+  // Rejoin by token (refresh / reconnect). Constant-time per-token compare so
+  // the lookup doesn't leak how many bytes of a guessed token were correct.
   if (opts.playerToken) {
-    const existing = [...room.players.values()].find((p) => p.token === opts.playerToken);
+    const existing = [...room.players.values()].find((p) => tokenEquals(p.token, opts.playerToken!));
     if (existing) {
       existing.online = true;
       if (opts.name) existing.name = opts.name;
@@ -339,7 +343,9 @@ interface PersistedRoom {
   createdAt: number;
   updatedAt: number;
   expiresAt: number;
-  creatorIp?: string;
+  // creatorIp is intentionally NOT persisted — it's PII and only needed for the
+  // live per-IP room cap (rebuilt in-memory). The per-IP counter resets on
+  // restart, which is an acceptable trade for keeping no IPs at rest.
   currentStoryId: string | null;
   players: Omit<Player, "online">[];
   stories: {
@@ -365,7 +371,6 @@ function serialize(room: Room): PersistedRoom {
     createdAt: room.createdAt,
     updatedAt: room.updatedAt,
     expiresAt: room.expiresAt,
-    creatorIp: room.creatorIp,
     currentStoryId: room.currentStoryId,
     players: [...room.players.values()].map(({ online: _online, ...p }) => p),
     stories: room.stories.map((s) => ({
@@ -408,7 +413,8 @@ function deserialize(p: PersistedRoom): Room {
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
     expiresAt: p.expiresAt,
-    creatorIp: p.creatorIp,
+    // creatorIp not restored — see PersistedRoom. trackIp() no-ops without it,
+    // so rehydrated rooms simply aren't counted against the per-IP cap.
     currentStoryId: p.currentStoryId,
     players,
     stories,

@@ -55,6 +55,7 @@ players — you'll see live joins, votes, and reveals.
 | `npm run start:local` | Build, then serve everything from Node on `:3000` |
 | `npm run typecheck` | Type-check all workspaces |
 | `npm run test:security` | Run abuse/security checks against a server on `:3000` |
+| `npm run scan:secrets` | Scan the whole tree for committed secrets (the pre-commit hook runs this on staged files) |
 
 ## Config (env vars — local and prod differ only here)
 
@@ -69,7 +70,20 @@ players — you'll see live joins, votes, and reveals.
 | `MAX_TTL_MS` | `86400000` | absolute room cap (24h) |
 | `MAX_ROOMS_PER_IP` | `20` | per-IP room cap |
 | `MAX_SOCKETS_PER_IP` | `30` | per-IP concurrent socket cap (flood guard) |
+| `MAX_ROOMS` | `50000` | global cap on total live rooms (distributed-flood backstop) |
 | `DB_PATH` | `./data/dev.sqlite` | SQLite file |
+
+## Contributing
+
+Secrets are kept out of git by a **pre-commit hook**. `npm install` runs a `prepare`
+step that points this repo's `core.hooksPath` at [`.githooks/`](.githooks/), so the
+[`secret-scan`](scripts/secret-scan.mjs) check runs automatically before every commit and
+blocks anything that looks like a private key or API token. Run it on demand with
+`npm run scan:secrets`.
+
+The hook is repo-local, skips gracefully if Node isn't installed, and is fully reversible
+(`git config --unset core.hooksPath`). If a match is a false positive, add the marker
+`secret-scan-ok` on that line.
 
 ## Deployment
 

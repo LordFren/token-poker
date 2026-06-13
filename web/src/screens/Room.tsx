@@ -90,6 +90,9 @@ function Header() {
         <span className={`statusdot${app.state.connected ? " online" : ""}`} />
         {app.state.connected ? "live" : "off"}
       </span>
+      <button className="btn sm" onClick={app.goLanding} title="Leave this room on this device (clears your saved host/player token)">
+        Leave
+      </button>
     </header>
   );
 }

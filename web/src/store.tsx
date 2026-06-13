@@ -226,6 +226,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (ht) void simple("setModel", { hostToken: ht, modelId, outputRatio });
       },
       goLanding() {
+        // Leaving wipes this device's stored identity (incl. the host token, a
+        // bearer secret) so it can't linger on a shared computer. Bounce the
+        // socket so the server drops our session and no late `state` broadcast
+        // routes us back into the room; identity is now null, so onConnect's
+        // auto-rejoin is a no-op.
+        const id = identityRef.current;
+        if (id) clearIdentity(id.code);
+        dispatch({ t: "identity", v: null });
+        dispatch({ t: "snapshot", v: null });
+        socket.disconnect();
+        socket.connect();
         window.history.pushState({}, "", "/");
         dispatch({ t: "route", v: { name: "landing" } });
       },

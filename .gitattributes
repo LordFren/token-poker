@@ -1,0 +1,19 @@
+# Normalize line endings: store LF in the repo; check out native by default.
+# Without this, line endings depend on each contributor's core.autocrlf, which
+# leads to noisy diffs and — worse — CRLF in files that must be LF.
+* text=auto
+
+# Files executed on Linux / through /bin/sh MUST be LF on every platform,
+# otherwise they fail with "bad interpreter: /bin/sh^M" or "\r" errors.
+*.sh        text eol=lf
+.githooks/* text eol=lf
+
+# Binary assets — never touch their bytes or line endings.
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff  binary
+*.woff2 binary

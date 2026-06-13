@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 
 // base58 alphabet (Bitcoin) — no 0/O/I/l ambiguity.
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -33,4 +33,16 @@ export function newToken(): string {
 /** Short opaque id for players/stories (non-secret). */
 export function newId(prefix: string): string {
   return `${prefix}_${base58(9)}`;
+}
+
+/**
+ * Constant-time equality for secret tokens (host + player tokens are fixed-length
+ * hex). Comparing with `===` short-circuits on the first differing byte, which
+ * leaks position via timing; timingSafeEqual always reads the whole buffer.
+ * Length is not secret here (all tokens are 32 chars), so an early length check
+ * is fine and avoids timingSafeEqual's equal-length requirement.
+ */
+export function tokenEquals(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }

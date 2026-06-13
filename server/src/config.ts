@@ -26,6 +26,8 @@ export const config = {
 
   // Abuse limits
   maxRoomsPerIp: num(process.env.MAX_ROOMS_PER_IP, 20),
+  /** Global backstop on total live rooms (per-IP caps don't bound a distributed flood). */
+  maxRooms: num(process.env.MAX_ROOMS, 50_000),
   maxSocketsPerIp: num(process.env.MAX_SOCKETS_PER_IP, 30),
   maxRounds: num(process.env.MAX_ROUNDS, 1000),
   socketBufferBytes: num(process.env.SOCKET_BUFFER_BYTES, 8 * 1024),
