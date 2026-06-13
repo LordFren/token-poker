@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { mkdirSync } from "node:fs";
+import { chmodSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { config } from "./config.js";
 
@@ -11,9 +11,27 @@ import { config } from "./config.js";
 let db: Database.Database;
 
 export function initDb(): void {
-  mkdirSync(path.dirname(config.dbPath), { recursive: true });
+  const dir = path.dirname(config.dbPath);
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
   db = new Database(config.dbPath);
   db.pragma("journal_mode = WAL");
+  // The DB stores host/player tokens in plaintext, so keep it readable only by
+  // the service user (defense in depth — the systemd sandbox already isolates
+  // it). chmod the dir in case it pre-existed with looser perms, then the DB
+  // file and its WAL/SHM siblings. Each is best-effort: not being the owner or
+  // a sibling not yet existing must not stop the server from booting.
+  try {
+    chmodSync(dir, 0o700);
+  } catch {
+    /* not owner / unsupported FS — non-fatal */
+  }
+  for (const suffix of ["", "-wal", "-shm"]) {
+    try {
+      chmodSync(config.dbPath + suffix, 0o600);
+    } catch {
+      /* sibling may not exist yet — recreated and re-chmod'd on next boot */
+    }
+  }
   db.exec(`
     CREATE TABLE IF NOT EXISTS rooms (
       code       TEXT PRIMARY KEY,

@@ -104,9 +104,18 @@ function main(): void {
   });
 
   // Periodic expiry sweep: notify any connected clients, then drop the rooms.
+  // Also evict idle per-IP HTTP rate-limit buckets so the map can't grow
+  // unbounded across many distinct client IPs over time. A bucket idle long
+  // enough to have refilled to full carries no state, so dropping it is a no-op
+  // for rate limiting (a fresh bucket also starts full).
+  const httpBucketIdleMs = Math.max(config.sweepIntervalMs, new TokenBucket(config.httpRateLimit.capacity, config.httpRateLimit.refillPerSec).fullRefillMs);
   setInterval(() => {
     const removed = sweepExpired();
     for (const code of removed) io.to(code).emit("expired");
+    const cutoff = Date.now() - httpBucketIdleMs;
+    for (const [ip, b] of httpBuckets) {
+      if (b.lastSeen < cutoff) httpBuckets.delete(ip);
+    }
   }, config.sweepIntervalMs).unref();
 
   httpServer.listen(config.port, config.host, () => {
