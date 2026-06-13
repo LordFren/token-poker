@@ -73,5 +73,11 @@ players — you'll see live joins, votes, and reveals.
 
 ## Deployment
 
-Deployment to a small VPS (Hetzner) with Caddy + systemd is a separate, optional step — see
-the plan in `~/.claude/plans/`. Nothing in the local workflow above requires it.
+Deployment to a small VPS (Hetzner) with Caddy + systemd is a separate, optional step.
+Nothing in the local workflow above requires it.
+
+- **[`deploy/DEPLOY.md`](deploy/DEPLOY.md)** — step-by-step secure deployment guide (server,
+  firewall, TLS, systemd), with ready-to-use `Caddyfile`, systemd unit, env template, and
+  redeploy script alongside it in [`deploy/`](deploy/).
+- **[`docs/PLAN.md`](docs/PLAN.md)** — the original implementation plan (architecture, domain
+  model, security model, build order).
