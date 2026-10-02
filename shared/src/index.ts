@@ -74,16 +74,18 @@ export interface ModelPricing {
 }
 
 export const PRICING: Record<string, ModelPricing> = {
+  "claude-opus-5-5": { label: "Opus 5.5", in: 4.0, out: 20.0 },
+  "claude-sonnet-5-5": { label: "Sonnet 5.5", in: 2.0, out: 10.0 },
   "claude-opus-5": { label: "Opus 5", in: 5.0, out: 25.0 },
-  "claude-sonnet-5": { label: "Sonnet 5", in: 3.0, out: 15.0 },
+  "claude-sonnet-5": { label: "Sonnet 5", in: 2.0, out: 10.0 },
   "claude-opus-4-8": { label: "Opus 4.8", in: 5.0, out: 25.0 },
   "claude-sonnet-4-6": { label: "Sonnet 4.6", in: 3.0, out: 15.0 },
   "claude-haiku-4-5": { label: "Haiku 4.5", in: 1.0, out: 5.0 },
   // Temporarily disabled — re-enable by uncommenting:
-  // "claude-fable-5": { label: "Fable 5", in: 10.0, out: 50.0 },
+  // "claude-fable-5-1": { label: "Fable 5.1", in: 10.0, out: 50.0 },
 };
 
-export const DEFAULT_MODEL_ID = "claude-opus-5";
+export const DEFAULT_MODEL_ID = "claude-opus-5-5";
 /** Agentic sessions are input-dominated — output is typically ~10% of total. */
 export const DEFAULT_OUTPUT_RATIO = 0.1;
 
